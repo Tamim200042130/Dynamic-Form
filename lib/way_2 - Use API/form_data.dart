@@ -118,6 +118,19 @@ class _FormDataState extends State<FormData> {
   }
 
   Future<void> postData() async {
+    if (formData.isEmpty ||
+        formData.keys.every((key) =>
+            formData[key] == null || formData[key].toString().isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill up all the fields.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+    print('Form data: $formData');
+
     var postUrl = Uri.parse('https://ukm.justrack.com.my/api/v2/feedback_post');
     var response = await http.post(
       postUrl,
@@ -128,15 +141,17 @@ class _FormDataState extends State<FormData> {
       },
       body: json.encode({
         'user': 'ukmbus',
-        'response': formData.entries.map((e) {
-          return {'key': e.key, 'value': e.value};
-        }).toList()
+        'plate_no': 'psdfsd',
+        'response': [
+          {'key': 'field5', 'value': formData['field5'] ?? ''},
+          {'key': 'field6', 'value': formData['field6'] ?? ''},
+        ],
       }),
     );
 
     if (response.statusCode == 200) {
       print(
-          'Data posted successfully ${response.body} - ${response.statusCode} - ${response.reasonPhrase} - ${response.request} - ${response.headers}');
+          'Data posted successfully ${response.body} - ${response.statusCode}');
     } else {
       print('Failed to post data: ${response.statusCode} - ${response.body}');
     }
